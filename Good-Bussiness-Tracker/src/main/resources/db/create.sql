@@ -41,3 +41,11 @@ CREATE TABLE IF NOT EXISTS addresses_causes (
     addressId INTEGER,
     causeId INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS tours (
+    id int PRIMARY KEY auto_increment,
+    startPoint INTEGER,
+    endPoint INTEGER,
+    waypoints VARCHAR,
+    directions VARCHAR
+);

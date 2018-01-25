@@ -2,6 +2,7 @@ import com.google.gson.Gson;
 import dao.Sql2oAddressDao;
 import dao.Sql2oBusinessDao;
 import dao.Sql2oCauseDao;
+import dao.Sql2oTourDao;
 import models.*;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -17,12 +18,14 @@ public class App {
         Sql2oBusinessDao businessDao;
         Sql2oCauseDao causeDao;
         Sql2oAddressDao addressDao;
+        Sql2oTourDao tourDao;
         Connection con;
         Gson gson = new Gson();
 
         String connectionString = "jdbc:h2:~/good-business-tracker.db;INIT=RUNSCRIPT from 'classpath:db/create.sql'";
         Sql2o sql2o = new Sql2o(connectionString, "", "");
 
+        tourDao = new Sql2oTourDao(sql2o);
         businessDao = new Sql2oBusinessDao(sql2o);
         causeDao = new Sql2oCauseDao(sql2o);
         addressDao = new Sql2oAddressDao(sql2o);
@@ -54,6 +57,14 @@ public class App {
             businessDao.addAddressToBusiness(businessDao.findById(businessId), addressDao.findById(address.getId()));
             response.status(201);
             return gson.toJson(address);
+        });
+
+        //post new tour
+        post("/tours/new", "application/json", (request, response) -> {
+            Tour tour = gson.fromJson(request.body(), Tour.class);
+            tourDao.add(tour);
+            response.status(201);
+            return gson.toJson(tour);
         });
 
         //address associated to cause
@@ -95,7 +106,7 @@ public class App {
             return gson.toJson(businessDao.getAllCausesForABusiness(businessId));
         });
         //get all addresses for a business
-        get("/businesses/:id/addressess", "application/json", (request, response) -> {
+        get("/businesses/:id/addresses", "application/json", (request, response) -> {
             int businessId = Integer.parseInt(request.params("id"));
             response.status(201);
             return gson.toJson(businessDao.getAllAddressesForABusiness(businessId));
@@ -124,6 +135,27 @@ public class App {
             response.status(201);
             return gson.toJson(causeDao.getAllAddressesForCause(causeId));
         });
+
+        //get all tours
+        get("/tours", "application/json", (request, response) -> {
+            response.status(201);
+            return gson.toJson(tourDao.getAllTours());
+        });
+
+        //get tours by id
+        get("/tours/:id", "application/json", (request, response) -> {
+            int tourId = Integer.parseInt(request.params("id"));
+            response.status(201);
+            return gson.toJson(tourDao.findById(tourId));
+        });
+
+        //get directions for a tour
+        get("/tours/:id/directions", "application/json", (request, response) -> {
+            int tourId = Integer.parseInt(request.params("id"));
+            response.status(201);
+            return tourDao.getDirectionsForATour(tourId);
+        });
+
         //=======================update========================
 
         //update business info
